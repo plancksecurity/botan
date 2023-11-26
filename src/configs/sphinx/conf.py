@@ -104,6 +104,9 @@ try:
     import sphinx_rtd_theme
     html_theme = "sphinx_rtd_theme"
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+    extensions = [
+        'sphinx_rtd_theme'
+    ]
 except ImportError as e:
     html_theme = 'agogo'
     html_theme_path = []
@@ -176,6 +179,39 @@ else:
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'botandoc'
+
+# Set up the RTD lower left
+if is_website_build:
+    import sys, os
+
+    try:
+        html_context
+    except NameError:
+        html_context = dict()
+        html_context['display_lower_left'] = True
+
+    html_context['display_github'] = True
+    html_context['github_user'] = 'randombit'
+    html_context['github_repo'] = 'botan'
+    html_context['github_version'] = 'master/doc/'
+
+    # tell the theme which version we're currently on
+    # 'current_version' affects the lower-left rtd menu
+    # and 'version' affects the logo-area version
+    html_context['current_version'] = version
+    html_context['version'] = version
+
+    # populate links to other versions
+    html_context['versions'] = list()
+
+    # publish the latest 2.x and all 3.x versions
+    rtd_versions = ['2.19', '3.0', '3.1', '3.2', version]
+    for v in rtd_versions:
+        html_context['versions'].append( (v, v) )
+
+    # populate links to other formats/downloads
+    html_context['downloads'] = list()
+    html_context['downloads'].append( ('pdf', version + '/' +project+ '.pdf') )
 
 # -- Options for LaTeX output --------------------------------------------------
 
