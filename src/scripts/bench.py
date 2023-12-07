@@ -268,7 +268,8 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
-    parser = optparse.OptionParser()
+    usage = "usage: %prog [options] [algo1] [algo2] [...]"
+    parser = optparse.OptionParser(usage=usage)
 
     parser.add_option('--verbose', action='store_true', default=False, help="be noisy")
     parser.add_option('--quiet', action='store_true', default=False, help="be very quiet")
@@ -299,13 +300,25 @@ def main(args=None):
 
     logging.info("Comparing Botan %s with OpenSSL %s", botan_version, openssl_version)
 
-    for algo in sorted(EVP_MAP.keys()):
-        result = bench_algo(openssl, botan, algo)
-        print(result.result_string())
+    if len(args) > 1:
+        algos = args[1:]
+        for algo in algos:
+            if algo in EVP_MAP.keys():
+                result = bench_algo(openssl, botan, algo)
+                print(result.result_string())
+            elif algo in SIGNATURE_EVP_MAP.keys():
+                result = bench_signature_algo(openssl, botan, algo)
+                print(result.result_string())
+            else:
+                logging.error("Unknown algorithm '%s'", algo)
+    else:
+        for algo in sorted(EVP_MAP.keys()):
+            result = bench_algo(openssl, botan, algo)
+            print(result.result_string())
 
-    for algo in sorted(SIGNATURE_EVP_MAP.keys()):
-        result = bench_signature_algo(openssl, botan, algo)
-        print(result.result_string())
+        for algo in sorted(SIGNATURE_EVP_MAP.keys()):
+            result = bench_signature_algo(openssl, botan, algo)
+            print(result.result_string())
 
     return 0
 
