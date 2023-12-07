@@ -4,11 +4,13 @@
 Compare Botan with OpenSSL using their respective benchmark utils
 
 (C) 2017,2022 Jack Lloyd
+    2023 René Meusel, Rohde & Schwarz Cybersecurity GmbH
+    2023 René Fischer
 
 Botan is released under the Simplified BSD License (see license.txt)
 
 TODO
- - Also compare RSA, ECDSA, ECDH
+ - Also compare ECDH
  - Output pretty graphs with matplotlib
 """
 
