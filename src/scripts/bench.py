@@ -136,8 +136,8 @@ def run_openssl_bench(openssl, algo):
                 results.append(result)
                 result = {}
     elif algo in SIGNATURE_EVP_MAP:
-        signature_ops = re.compile(r'\+(R1|R7):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
-        verify_ops    = re.compile(r'\+(R2|R8):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
+        signature_ops = re.compile(r'\+(R1|R7|R5):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
+        verify_ops    = re.compile(r'\+(R2|R8|R6):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
         ignored = re.compile(r'\+(DTP|F2|R3|R4|F4):.*')
 
         result = {}
@@ -165,7 +165,7 @@ def run_openssl_bench(openssl, algo):
                 logging.error("Unexpected output from OpenSSL %s", l)
 
     elif algo in KEY_AGREEMENT_EVP_MAP:
-        res_header    = re.compile(r'\+(R9|R14):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
+        res_header    = re.compile(r'\+(R7|R9|R12|R14):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
         ignored = re.compile(r'\+(DTP|F5|F8):.*')
 
         result = {}
