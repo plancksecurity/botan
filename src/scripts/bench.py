@@ -102,7 +102,6 @@ def run_openssl_bench(openssl, algo):
         cmd += [algo]
 
     output = run_command(cmd)
-    print(output)
     results = []
 
     if algo in EVP_MAP:
@@ -159,10 +158,12 @@ def run_openssl_bench(openssl, algo):
             else:
                 logging.error("Unexpected output from OpenSSL %s", l)
 
-    print(results)
     return results
 
 def run_botan_bench(botan, runtime, buf_sizes, algo):
+
+    logging.info('Running Botan benchmark for %s', algo)
+
     cmd = [botan, 'speed', '--format=json', '--msec=%d' % int(runtime * 1000),
            '--buf-size=%s' % (','.join([str(i) for i in buf_sizes])), algo]
     output = run_command(cmd)
@@ -171,11 +172,12 @@ def run_botan_bench(botan, runtime, buf_sizes, algo):
     return output
 
 def run_botan_signature_bench(botan, runtime, algo):
+
+    logging.info('Running Botan benchmark for %s', algo)
+
     cmd = [botan, 'speed', '--format=json', '--msec=%d' % int(runtime * 1000), algo]
     output = run_command(cmd)
     output = json.loads(output)
-
-    print(output)
 
     results = []
     for verify in output:
@@ -195,23 +197,17 @@ def run_botan_signature_bench(botan, runtime, algo):
                     'ops': verify['events'],
                     'runtime': verify['nanos'] / 1000 / 1000 / 1000,
                 })
-    print(results)
     return results
 
 class BenchmarkResult:
     def __init__(self, algo, sizes, openssl_results, botan_results):
         self.algo = algo
-        self.metric = 'bps' if 'buf_size' in openssl_results[0] else 'ops'
         self.results = {}
 
         def find_result(results, sz):
             for r in results:
-                print(r)
                 if 'buf_size' in r and r['buf_size'] == sz:
                     return r['bps']
-                if 'key_size' in r and r['key_size'] == sz:
-                    # TODO: return signature and verify ops separately
-                    return r['ops'] # (r['sig_ops'], r['verify_ops'])
             raise Exception("Could not find expected result in data")
 
         for size in sizes:
@@ -232,15 +228,46 @@ class BenchmarkResult:
                 winner = 'botan'
                 ratio = float(v['botan']) / v['openssl']
 
-            print(k)
-            print(v)
+            out += "algo %s buf_size % 6d botan % 12d bps openssl % 12d bps adv %s by %.02f\n" % (
+                self.algo, k, v['botan'], v['openssl'], winner, ratio)
+        return out
 
-            if self.metric == 'ops':
-                out += "algo %s key_size % 6d botan % 12d ops openssl % 12d ops adv %s by %.02f\n" % (
-                    self.algo, k, v['botan'], v['openssl'], winner, ratio)
-            else:
-                out += "algo %s buf_size % 6d botan % 12d bps openssl % 12d bps adv %s by %.02f\n" % (
-                    self.algo, k, v['botan'], v['openssl'], winner, ratio)
+class SignatureBenchmarkResult:
+    def __init__(self, algo, sizes, openssl_results, botan_results):
+        self.algo = algo
+        self.results = {}
+
+        def find_result(results, sz):
+            for verify in results:
+                    for sign in results:
+                        if sign['op'] == 'sign' and verify['op'] == 'verify' and verify['key_size'] == sz:
+                            return {'sign': sign['ops'], 'verify': verify['ops']}
+            raise Exception("Could not find expected result in data")
+
+        for size in sizes:
+            self.results[size] = {
+                'openssl': find_result(openssl_results, size),
+                'botan': find_result(botan_results, size)
+            }
+
+    def result_string(self):
+
+        out = ""
+        for (k, v) in self.results.items():
+            openssl = v['openssl']
+            botan = v['botan']
+
+            for op in openssl.keys():
+                if openssl[op] > botan[op]:
+                    winner = 'openssl'
+                    ratio = float(openssl[op]) / botan[op]
+                else:
+                    winner = 'botan'
+                    ratio = float(botan[op]) / openssl[op]
+
+                out += "algo %s key_size % 5d % 8s botan % 10d openssl % 10d adv %s by %.02f\n" % (
+                        self.algo, k, op, botan[op], openssl[op], winner, ratio)
+
         return out
 
 def bench_algo(openssl, botan, algo):
@@ -262,7 +289,7 @@ def bench_signature_algo(openssl, botan, algo):
     kszs_ossl = {x['key_size'] for x in openssl_results}
     kszs_botan = {x['key_size'] for x in botan_results}
 
-    return BenchmarkResult(algo, sorted(kszs_ossl.intersection(kszs_botan)), openssl_results, botan_results)
+    return SignatureBenchmarkResult(algo, sorted(kszs_ossl.intersection(kszs_botan)), openssl_results, botan_results)
 
 def main(args=None):
     if args is None:
