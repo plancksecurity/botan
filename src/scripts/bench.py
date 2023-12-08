@@ -10,7 +10,6 @@ Compare Botan with OpenSSL using their respective benchmark utils
 Botan is released under the Simplified BSD License (see license.txt)
 
 TODO
- - Also compare ECDH
  - Output pretty graphs with matplotlib
 """
 
@@ -88,6 +87,11 @@ SIGNATURE_EVP_MAP = {
     'ECDSA': 'ecdsa'
     }
 
+KEY_AGREEMENT_EVP_MAP = {
+    'DH': 'ffdh',
+    'ECDH': 'ecdh'
+    }
+
 def run_openssl_bench(openssl, algo):
 
     logging.info('Running OpenSSL benchmark for %s', algo)
@@ -98,6 +102,8 @@ def run_openssl_bench(openssl, algo):
         cmd += ['-evp', EVP_MAP[algo]]
     elif algo in SIGNATURE_EVP_MAP:
         cmd += [SIGNATURE_EVP_MAP[algo]]
+    elif algo in KEY_AGREEMENT_EVP_MAP:
+        cmd += [KEY_AGREEMENT_EVP_MAP[algo]]
     else:
         cmd += [algo]
 
@@ -158,6 +164,25 @@ def run_openssl_bench(openssl, algo):
             else:
                 logging.error("Unexpected output from OpenSSL %s", l)
 
+    elif algo in KEY_AGREEMENT_EVP_MAP:
+        res_header    = re.compile(r'\+(R9|R14):([0-9]+):([0-9]+):([0-9]+\.[0-9]+)$')
+        ignored = re.compile(r'\+(DTP|F5|F8):.*')
+
+        result = {}
+
+        for l in output.splitlines():
+            if ignored.match(l):
+                continue
+
+            if match := res_header.match(l):
+                results.append({
+                    'algo': algo,
+                    'key_size': int(match.group(3)),
+                    'ops': int(match.group(2)),
+                    'runtime': float(match.group(4))})
+            else:
+                logging.error("Unexpected output from OpenSSL %s", l)
+
     return results
 
 def run_botan_bench(botan, runtime, buf_sizes, algo):
@@ -197,6 +222,25 @@ def run_botan_signature_bench(botan, runtime, algo):
                     'ops': verify['events'],
                     'runtime': verify['nanos'] / 1000 / 1000 / 1000,
                 })
+    return results
+
+def run_botan_key_agreement_bench(botan, runtime, algo):
+
+    logging.info('Running Botan benchmark for %s', algo)
+
+    cmd = [botan, 'speed', '--format=json', '--msec=%d' % int(runtime * 1000), algo]
+    output = run_command(cmd)
+    output = json.loads(output)
+
+    results = []
+    for l in output:
+        if l['op'] == 'key agreements':
+            results.append({
+                'algo': algo,
+                'key_size': int(re.search(r'[A-Z]+-[a-z]*([0-9]+).*', l['algo']).group(1)),
+                'ops': l['events'],
+                'runtime': l['nanos'] / 1000 / 1000 / 1000,
+            })
     return results
 
 class BenchmarkResult:
@@ -270,6 +314,39 @@ class SignatureBenchmarkResult:
 
         return out
 
+class KeyAgreementBenchmarkResult:
+    def __init__(self, algo, sizes, openssl_results, botan_results):
+        self.algo = algo
+        self.results = {}
+
+        def find_result(results, sz):
+            for r in results:
+                if 'key_size' in r and r['key_size'] == sz:
+                    return r['ops']
+            raise Exception("Could not find expected result in data")
+
+        for size in sizes:
+            self.results[size] = {
+                'openssl': find_result(openssl_results, size),
+                'botan': find_result(botan_results, size)
+            }
+
+    def result_string(self):
+
+        out = ""
+        for (k, v) in self.results.items():
+
+            if v['openssl'] > v['botan']:
+                winner = 'openssl'
+                ratio = float(v['openssl']) / v['botan']
+            else:
+                winner = 'botan'
+                ratio = float(v['botan']) / v['openssl']
+
+            out += "algo %s key_size % 6d botan % 12d key agreements openssl % 12d key agreements adv %s by %.02f\n" % (
+                self.algo, k, v['botan'], v['openssl'], winner, ratio)
+        return out
+
 def bench_algo(openssl, botan, algo):
     openssl_results = run_openssl_bench(openssl, algo)
 
@@ -290,6 +367,18 @@ def bench_signature_algo(openssl, botan, algo):
     kszs_botan = {x['key_size'] for x in botan_results}
 
     return SignatureBenchmarkResult(algo, sorted(kszs_ossl.intersection(kszs_botan)), openssl_results, botan_results)
+
+def bench_key_agreement_algo(openssl, botan, algo):
+    openssl_results = run_openssl_bench(openssl, algo)
+
+    runtime = sum(x['runtime'] for x in openssl_results) / len(openssl_results)
+    botan_results = run_botan_key_agreement_bench(botan, runtime, algo)
+
+    kszs_ossl = {x['key_size'] for x in openssl_results}
+    kszs_botan = {x['key_size'] for x in botan_results}
+
+    return KeyAgreementBenchmarkResult(algo, sorted(kszs_ossl.intersection(kszs_botan)), openssl_results, botan_results)
+
 
 def main(args=None):
     if args is None:
@@ -336,6 +425,9 @@ def main(args=None):
             elif algo in SIGNATURE_EVP_MAP.keys():
                 result = bench_signature_algo(openssl, botan, algo)
                 print(result.result_string())
+            elif algo in KEY_AGREEMENT_EVP_MAP.keys():
+                result = bench_key_agreement_algo(openssl, botan, algo)
+                print(result.result_string())
             else:
                 logging.error("Unknown algorithm '%s'", algo)
     else:
@@ -345,6 +437,10 @@ def main(args=None):
 
         for algo in sorted(SIGNATURE_EVP_MAP.keys()):
             result = bench_signature_algo(openssl, botan, algo)
+            print(result.result_string())
+
+        for algo in sorted(KEY_AGREEMENT_EVP_MAP.keys()):
+            result = bench_key_agreement_algo(openssl, botan, algo)
             print(result.result_string())
 
     return 0
