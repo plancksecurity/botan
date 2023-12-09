@@ -52,11 +52,7 @@ AutoSeeded_RNG::AutoSeeded_RNG(RandomNumberGenerator& underlying_rng,
    }
 
 AutoSeeded_RNG::AutoSeeded_RNG(size_t reseed_interval) :
-#if defined(BOTAN_HAS_SYSTEM_RNG)
-   AutoSeeded_RNG(system_rng(), reseed_interval)
-#else
    AutoSeeded_RNG(Entropy_Sources::global_sources(), reseed_interval)
-#endif
    {
    }
 
