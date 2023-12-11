@@ -1309,8 +1309,9 @@ def cli_speed_tests(_tmp_dir):
             logging.error("Unexpected line %s", line)
 
     # Entropy source rdseed output 128 bytes estimated entropy 0 in 0.02168 ms total samples 32
+    # Entropy source rdseed output 128 bytes estimated entropy 0 in 0 ms total samples 32
     output = test_cli("speed", ["--msec=%d" % (msec), "entropy"], None).split('\n')
-    format_re = re.compile(r'^Entropy source [_a-z0-9]+ output [0-9]+ bytes estimated entropy [0-9]+ in [0-9]+\.[0-9]+ ms .*total samples [0-9]+')
+    format_re = re.compile(r'^Entropy source [_a-z0-9]+ output [0-9]+ bytes estimated entropy [0-9]+ in [0-9]+(\.[0-9]+)? ms .*total samples [0-9]+')
     for line in output:
         if format_re.match(line) is None:
             logging.error("Unexpected line %s", line)
