@@ -1,0 +1,56 @@
+
+name: release
+
+on: push
+
+jobs:
+  ubuntu-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          ./configure.py --cc=clang --disable-shared-library --prefix install
+          make -j8
+      - name: Install
+        run: make install
+      - name: Compress
+        run: |
+          cd install
+          mv install/lib/pkgconfig lib/
+          rm -rf install
+          tar cvj . > ../ubuntu-release.tar.bz2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.head_ref || github.ref_name }}
+          files: ubuntu-release.tar.bz2
+          fail_on_unmatched_files: true
+
+  windows-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+      - name: Build
+        run: |
+          python3 configure.py --cc=msvc --disable-shared-library --os=windows --prefix install
+          nmake
+          nmake check
+      - name: Install
+        run: nmake install
+      - name: Compress
+        run: Compress-Archive -Path install/* -Destination windows-release.zip
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.head_ref || github.ref_name }}
+          files: windows-release.zip
+          fail_on_unmatched_files: true
