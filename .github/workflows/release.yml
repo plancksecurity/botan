@@ -13,15 +13,15 @@ jobs:
           make -j8
           make install
       - name: archive artifacts on sha
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ubuntu-${{ github.sha }}
           path: install
       - name: archive artifacts on tag
         if: github.ref_type == 'tag'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: windows-${{ github.ref }}
+          name: ubuntu-${{ github.ref }}
           path: install
 
   windows-release:
@@ -33,18 +33,17 @@ jobs:
           arch: amd64
       - run: |
           python3 configure.py --cc=msvc --disable-shared-library --os=windows --prefix install
-          ls
           nmake
           nmake check
           nmake install
       - name: archive artifacts on sha
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-${{ github.sha }}
           path: install
       - name: archive artifacts on tag
         if: github.ref_type == 'tag'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-${{ github.ref }}
           path: install
