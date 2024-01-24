@@ -10,11 +10,14 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - name: Build
+	    run: |
           ./configure.py --cc=clang --disable-shared-library --prefix install
           make -j8
-          make install
-      - run: |
+      - name: Install
+	    run: make install
+      - name: Compress
+	    run: |
           cd install
           mv install/lib/pkgconfig lib/
           rm -rf install
@@ -32,17 +35,19 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install MSVC
+	    uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
-      - run: |
+      - name: Build
+	    run: |
           python3 configure.py --cc=msvc --disable-shared-library --os=windows --prefix install
           nmake
           nmake check
-          nmake install
       - name: Install
-        run: |
-          Compress-Archive -Path install/* -Destination windows-release.zip
+        run: nmake install
+      - name: Compress
+        run: Compress-Archive -Path install/* -Destination windows-release.zip
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
