@@ -11,13 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-	    run: |
+        run: |
           ./configure.py --cc=clang --disable-shared-library --prefix install
           make -j8
       - name: Install
-	    run: make install
+        run: make install
       - name: Compress
-	    run: |
+        run: |
           cd install
           mv install/lib/pkgconfig lib/
           rm -rf install
@@ -36,11 +36,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install MSVC
-	    uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
       - name: Build
-	    run: |
+        run: |
           python3 configure.py --cc=msvc --disable-shared-library --os=windows --prefix install
           nmake
           nmake check
