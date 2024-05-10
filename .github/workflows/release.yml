@@ -1,31 +1,45 @@
-
+# This workflow does the following:
+#
+#   1. builds botan on Ubuntu and Windows
+#   2. creates a release, if it doesn't exist
+#   3. uploads the artifacts to that release
+#
+# This is done whenever a new tag is created.
+#
 name: release
 
-on: push
+on: 
+  push:
+    tags:
+    - '*'
 
 jobs:
   ubuntu-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - run: |
           ./configure.py --cc=clang --disable-shared-library --prefix install
           make -j8
           make install
-      - name: archive artifacts on sha
-        uses: actions/upload-artifact@v4
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
         with:
-          name: ubuntu-${{ github.sha }}
-          path: install
-      - name: archive artifacts on tag
-        if: github.ref_type == 'tag'
-        uses: actions/upload-artifact@v4
+          type: 'zip'
+          filename: 'ubuntu-release.zip'
+          directory: install
+      - name: Create release
+        uses: ncipollo/release-action@v1
         with:
-          name: ubuntu-${{ github.ref }}
-          path: install
+          allowUpdates: true
+          artifacts: 'install/ubuntu-release.zip'
 
   windows-release:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
@@ -36,14 +50,14 @@ jobs:
           nmake
           nmake check
           nmake install
-      - name: archive artifacts on sha
-        uses: actions/upload-artifact@v4
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
         with:
-          name: windows-${{ github.sha }}
-          path: install
-      - name: archive artifacts on tag
-        if: github.ref_type == 'tag'
-        uses: actions/upload-artifact@v4
+          type: 'zip'
+          filename: 'windows-release.zip'
+          directory: install
+      - name: Create release
+        uses: ncipollo/release-action@v1
         with:
-          name: windows-${{ github.ref }}
-          path: install
+          allowUpdates: true
+          artifacts: 'install/windows-release.zip'
