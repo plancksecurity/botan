@@ -44,17 +44,31 @@ namespace {
 class System_RNG_Impl final : public RandomNumberGenerator
    {
    public:
+#ifdef BOTAN_HAS_JITTER
+      System_RNG_Impl() : m_advapi("advapi32.dll"), m_jitter{jitter_collector_create()}
+#else
       System_RNG_Impl() : m_advapi("advapi32.dll")
+#endif
          {
          // This throws if the function is not found
          m_rtlgenrandom = m_advapi.resolve<RtlGenRandom_fptr>("SystemFunction036");
          }
+
+#ifdef BOTAN_HAS_JITTER
+      ~System_RNG_Impl()
+         {
+            jitter_collector_free(m_jitter);
+         }
+#endif
 
       void randomize(uint8_t buf[], size_t len) override
          {
          bool success = m_rtlgenrandom(buf, ULONG(len)) == TRUE;
          if(!success)
             throw System_Error("RtlGenRandom failed");
+#ifdef BOTAN_HAS_JITTER
+         jitter_buffer(m_jitter, buf, len);
+#endif
          }
 
       void add_entropy(const uint8_t[], size_t) override { /* ignored */ }
@@ -70,6 +84,9 @@ class System_RNG_Impl final : public RandomNumberGenerator
 
       Dynamically_Loaded_Library m_advapi;
       RtlGenRandom_fptr m_rtlgenrandom;
+#ifdef BOTAN_HAS_JITTER
+      rand_data *m_jitter;
+#endif
    };
 
 #elif defined(BOTAN_TARGET_OS_HAS_CRYPTO_NG)
