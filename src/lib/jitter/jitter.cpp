@@ -10,7 +10,7 @@ rand_data* jitter_collector_create() {
    static int result = jent_entropy_init();
 
    if(result == 0) {
-      return jent_entropy_collector_alloc(1, 0);
+      return jent_entropy_collector_alloc(8, 0);
    } else {
       return nullptr;
    }
