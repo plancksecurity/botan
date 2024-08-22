@@ -8,10 +8,10 @@
 #
 name: release
 
-on: 
+on:
   push:
     tags:
-    - '*'
+      - "*"
 
 jobs:
   ubuntu-release:
@@ -27,14 +27,16 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
-          type: 'zip'
-          filename: 'ubuntu-release.zip'
+          type: "zip"
+          filename: "ubuntu-release.zip"
           directory: install
+      - name: Compute checksum
+        run: sha256sum ubuntu-release.zip > ubuntu-release.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: 'install/ubuntu-release.zip'
+          artifacts: "install/ubuntu-release.zip,ubuntu-release.sha256sum"
 
   windows-release:
     runs-on: windows-latest
@@ -53,11 +55,13 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
-          type: 'zip'
-          filename: 'windows-release.zip'
+          type: "zip"
+          filename: "windows-release.zip"
           directory: install
+      - name: Compute checksum
+        run: sha256sum windows-release.zip > windows-release.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: 'install/windows-release.zip'
+          artifacts: "install/windows-release.zip,windows-release.sha256sum"
