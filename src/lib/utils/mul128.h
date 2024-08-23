@@ -36,7 +36,7 @@ namespace Botan {
       *lo = (r      ) & 0xFFFFFFFFFFFFFFFF;  \
    } while(0)
 
-#elif defined(BOTAN_BUILD_COMPILER_IS_MSVC) && defined(BOTAN_TARGET_CPU_HAS_NATIVE_64BIT)
+#elif defined(BOTAN_BUILD_COMPILER_IS_MSVC) && defined(BOTAN_TARGET_CPU_HAS_NATIVE_64BIT) && !defined(BOTAN_CROSSTARGET_AARCH64_MSVC) 
 
 #include <intrin.h>
 #pragma intrinsic(_umul128)
