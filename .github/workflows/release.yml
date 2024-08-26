@@ -8,10 +8,10 @@
 #
 name: release
 
-on: 
+on:
   push:
     tags:
-    - '*'
+      - "*"
 
 jobs:
   ubuntu-release:
@@ -21,20 +21,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          ./configure.py --cc=clang --disable-shared-library --prefix install
+          ./configure.py --cc=clang --prefix install
           make -j8
           make install
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
-          type: 'zip'
-          filename: 'ubuntu-release.zip'
+          type: "zip"
+          filename: "ubuntu-release.zip"
           directory: install
+      - name: Compute checksum
+        run: sha256sum ubuntu-release.zip > ubuntu-release.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: 'install/ubuntu-release.zip'
+          artifacts: "install/ubuntu-release.zip,ubuntu-release.sha256sum"
 
   windows-release:
     runs-on: windows-latest
@@ -46,18 +48,20 @@ jobs:
         with:
           arch: amd64
       - run: |
-          python3 configure.py --cc=msvc --disable-shared-library --os=windows --prefix install
+          python3 configure.py --cc=msvc --os=windows --prefix install
           nmake
           nmake check
           nmake install
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
-          type: 'zip'
-          filename: 'windows-release.zip'
+          type: "zip"
+          filename: "windows-release.zip"
           directory: install
+      - name: Compute checksum
+        run: sha256sum windows-release.zip > windows-release.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: 'install/windows-release.zip'
+          artifacts: "install/windows-release.zip,windows-release.sha256sum"
