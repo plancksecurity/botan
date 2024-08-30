@@ -7,6 +7,10 @@
 
 #include <botan/system_rng.h>
 
+#ifdef BOTAN_HAS_JITTER
+#include <botan/internal/jitter.h>
+#endif
+
 #if defined(BOTAN_TARGET_OS_HAS_RTLGENRANDOM)
   #include <botan/dyn_load.h>
   #define NOMINMAX 1
@@ -115,7 +119,16 @@ class System_RNG_Impl final : public RandomNumberGenerator
 class System_RNG_Impl final : public RandomNumberGenerator
    {
    public:
+#ifdef BOTAN_HAS_JITTER
+      System_RNG_Impl() : m_jitter{jitter_collector_create()} {}
+
+      ~System_RNG_Impl()
+      {
+         jitter_collector_free(m_jitter);
+      }
+#else
       // No constructor or destructor needed as no userland state maintained
+#endif
 
       void randomize(uint8_t buf[], size_t len) override
          {
@@ -123,6 +136,9 @@ class System_RNG_Impl final : public RandomNumberGenerator
          if(len > 0)
             {
             ::arc4random_buf(buf, len);
+#ifdef BOTAN_HAS_JITTER
+            jitter_buffer(m_jitter, buf, len);
+#endif
             }
          }
 
@@ -131,6 +147,10 @@ class System_RNG_Impl final : public RandomNumberGenerator
       bool is_seeded() const override { return true; }
       void clear() override { /* not possible */ }
       std::string name() const override { return "arc4random"; }
+#ifdef BOTAN_HAS_JITTER
+   private:
+      rand_data *m_jitter;
+#endif
    };
 
 #elif defined(BOTAN_TARGET_OS_HAS_GETRANDOM)
