@@ -7,6 +7,10 @@
 
 #include <botan/system_rng.h>
 
+#ifdef BOTAN_HAS_AUTO_SEEDING_RNG
+#include <botan/auto_rng.h>
+#endif
+
 #ifdef BOTAN_HAS_JITTER
 #include <botan/internal/jitter.h>
 #endif
@@ -334,6 +338,16 @@ RandomNumberGenerator& system_rng()
    {
    static System_RNG_Impl g_system_rng;
    return g_system_rng;
+   }
+
+RandomNumberGenerator& default_rng()
+   {
+#ifdef BOTAN_HAS_AUTO_SEEDING_RNG
+   static AutoSeeded_RNG g_default_rng;
+   return g_default_rng;
+#else
+   return system_rng();
+#endif
    }
 
 }

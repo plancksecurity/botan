@@ -19,6 +19,13 @@ namespace Botan {
 */
 BOTAN_PUBLIC_API(2,0) RandomNumberGenerator& system_rng();
 
+/**
+* Return a shared reference to a global PRNG instance
+* that is seeded by system-specific entropy sources ("auto seeded RNG").
+* Fall back to `system_rng()`.
+*/
+BOTAN_PUBLIC_API(2,0) RandomNumberGenerator& default_rng();
+
 /*
 * Instantiable reference to the system RNG.
 */

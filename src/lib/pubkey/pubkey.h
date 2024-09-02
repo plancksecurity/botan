@@ -195,7 +195,7 @@ class BOTAN_PUBLIC_API(2,0) PK_Signer final
                 const std::string& emsa,
                 Signature_Format format = IEEE_1363,
                 const std::string& provider = "") :
-         PK_Signer(key, system_rng(), emsa, format, provider)
+         PK_Signer(key, default_rng(), emsa, format, provider)
          {}
 #endif
 
@@ -437,7 +437,7 @@ class BOTAN_PUBLIC_API(2,0) PK_Key_Agreement final
       PK_Key_Agreement(const Private_Key& key,
                        const std::string& kdf,
                        const std::string& provider = "") :
-         PK_Key_Agreement(key, system_rng(), kdf, provider)
+         PK_Key_Agreement(key, default_rng(), kdf, provider)
          {}
 #endif
 
@@ -553,7 +553,7 @@ class BOTAN_PUBLIC_API(2,0) PK_Encryptor_EME final : public PK_Encryptor
       PK_Encryptor_EME(const Public_Key& key,
                        const std::string& padding,
                        const std::string& provider = "") :
-         PK_Encryptor_EME(key, system_rng(), padding, provider) {}
+         PK_Encryptor_EME(key, default_rng(), padding, provider) {}
 #endif
 
       ~PK_Encryptor_EME();
@@ -602,7 +602,7 @@ class BOTAN_PUBLIC_API(2,0) PK_Decryptor_EME final : public PK_Decryptor
       PK_Decryptor_EME(const Private_Key& key,
                        const std::string& eme,
                        const std::string& provider = "") :
-         PK_Decryptor_EME(key, system_rng(), eme, provider) {}
+         PK_Decryptor_EME(key, default_rng(), eme, provider) {}
 #endif
 
       size_t plaintext_length(size_t ptext_len) const override;
@@ -641,7 +641,7 @@ class BOTAN_PUBLIC_API(2,0) PK_KEM_Encryptor final
       PK_KEM_Encryptor(const Public_Key& key,
                        const std::string& kem_param = "",
                        const std::string& provider = "") :
-         PK_KEM_Encryptor(key, system_rng(), kem_param, provider) {}
+         PK_KEM_Encryptor(key, default_rng(), kem_param, provider) {}
 #endif
 
       ~PK_KEM_Encryptor();
@@ -735,7 +735,7 @@ class BOTAN_PUBLIC_API(2,0) PK_KEM_Decryptor final
       PK_KEM_Decryptor(const Private_Key& key,
                        const std::string& kem_param = "",
                        const std::string& provider = "") :
-         PK_KEM_Decryptor(key, system_rng(), kem_param, provider)
+         PK_KEM_Decryptor(key, default_rng(), kem_param, provider)
          {}
 #endif
 
