@@ -212,7 +212,11 @@ class System_RNG_Impl final : public RandomNumberGenerator
 class System_RNG_Impl final : public RandomNumberGenerator
    {
    public:
+#ifdef BOTAN_HAS_JITTER
+      System_RNG_Impl() : m_jitter{jitter_collector_create()}
+#else
       System_RNG_Impl()
+#endif
          {
 #ifndef O_NOCTTY
 #define O_NOCTTY 0
@@ -242,6 +246,9 @@ class System_RNG_Impl final : public RandomNumberGenerator
          {
          ::close(m_fd);
          m_fd = -1;
+#ifdef BOTAN_HAS_JITTER
+         jitter_collector_free(m_jitter);
+#endif
          }
 
       void randomize(uint8_t buf[], size_t len) override;
@@ -253,6 +260,9 @@ class System_RNG_Impl final : public RandomNumberGenerator
    private:
       int m_fd;
       bool m_writable;
+#ifdef BOTAN_HAS_JITTER
+      rand_data *m_jitter;
+#endif
    };
 
 void System_RNG_Impl::randomize(uint8_t buf[], size_t len)
@@ -273,6 +283,9 @@ void System_RNG_Impl::randomize(uint8_t buf[], size_t len)
       buf += got;
       len -= got;
       }
+#ifdef BOTAN_HAS_JITTER
+   jitter_buffer(m_jitter, buf, len);
+#endif
    }
 
 void System_RNG_Impl::add_entropy(const uint8_t input[], size_t len)
