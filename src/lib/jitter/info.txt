@@ -1,0 +1,15 @@
+# https://botan.randombit.net/handbook/dev_ref/configure.html#adding-a-new-module
+
+load_on always
+
+<defines>
+JITTER -> 20240819
+</defines>
+
+<header:internal>
+jitter.h
+</header:internal>
+
+<libs>
+all -> jitterentropy
+</libs>
