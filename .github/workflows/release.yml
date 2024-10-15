@@ -28,15 +28,15 @@ jobs:
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: "zip"
-          filename: "ubuntu-release.zip"
+          filename: "ubuntu-release-3.zip"
           directory: install
       - name: Compute checksum
-        run: sha256sum ubuntu-release.zip > ubuntu-release.sha256sum
+        run: sha256sum ubuntu-release-3.zip > ubuntu-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "install/ubuntu-release.zip,ubuntu-release.sha256sum"
+          artifacts: "install/ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
 
   windows-release:
     runs-on: windows-latest
@@ -56,12 +56,12 @@ jobs:
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: "zip"
-          filename: "windows-release.zip"
+          filename: "windows-release-3.zip"
           directory: install
       - name: Compute checksum
-        run: sha256sum windows-release.zip > windows-release.sha256sum
+        run: sha256sum windows-release-3.zip > windows-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "install/windows-release.zip,windows-release.sha256sum"
+          artifacts: "install/windows-release-3.zip,windows-release-3.sha256sum"
