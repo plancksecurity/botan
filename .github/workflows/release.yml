@@ -31,7 +31,7 @@ jobs:
           filename: "ubuntu-release-3.zip"
           directory: install
       - name: Compute checksum
-        run: sha256sum ubuntu-release-3.zip > ubuntu-release-3.sha256sum
+        run: sha256sum install/ubuntu-release-3.zip > ubuntu-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
