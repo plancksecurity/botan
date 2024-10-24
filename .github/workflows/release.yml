@@ -37,6 +37,7 @@ jobs:
         with:
           allowUpdates: true
           artifacts: "install/ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
+          draft: true
 
   windows-release:
     runs-on: windows-latest
@@ -65,3 +66,4 @@ jobs:
         with:
           allowUpdates: true
           artifacts: "install/windows-release-3.zip,windows-release-3.sha256sum"
+          draft: true
