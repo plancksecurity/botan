@@ -49,10 +49,10 @@ jobs:
         with:
           arch: amd64
       - run: |
-          python3 configure.py --cc=msvc --os=windows --prefix install
-          nmake
-          nmake check
-          nmake install
+          python3 configure.py --cc=msvc --os=windows --prefix install --build-tool=ninja
+          ninja
+          ninja check
+          ninja install
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
