@@ -23,6 +23,7 @@ jobs:
       - run: |
           ./configure.py --cc=clang --prefix install
           make -j8
+          make check
           make install
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
