@@ -60,7 +60,7 @@ jobs:
           filename: "windows-release-3.zip"
           directory: install
       - name: Compute checksum
-        run: sha256sum windows-release-3.zip > windows-release-3.sha256sum
+        run: sha256sum install/windows-release-3.zip > windows-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
