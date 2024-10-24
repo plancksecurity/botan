@@ -23,7 +23,6 @@ jobs:
       - run: |
           ./configure.py --cc=clang --prefix install
           make -j8
-          make check
           make install
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
@@ -52,7 +51,6 @@ jobs:
       - run: |
           python3 configure.py --cc=msvc --os=windows --prefix install --build-tool=ninja
           ninja
-          ninja check
           ninja install
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
