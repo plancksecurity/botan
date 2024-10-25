@@ -29,7 +29,7 @@ jobs:
         with:
           type: "zip"
           filename: "ubuntu-release-3.zip"
-          directory: /opt/botan-3
+          directory: /opt
       - name: Compute checksum
         run: sha256sum ubuntu-release-3.zip > ubuntu-release-3.sha256sum
       - name: Create release
