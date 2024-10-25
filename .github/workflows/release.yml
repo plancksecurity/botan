@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          ./configure.py --cc=clang --prefix install
+          ./configure.py --cc=clang --prefix /opt/botan-3
           make -j8
           make install
       - name: Archive Release
@@ -29,14 +29,14 @@ jobs:
         with:
           type: "zip"
           filename: "ubuntu-release-3.zip"
-          directory: install
+          path: /opt/botan-3
       - name: Compute checksum
-        run: sha256sum install/ubuntu-release-3.zip > ubuntu-release-3.sha256sum
+        run: sha256sum ubuntu-release-3.zip > ubuntu-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "install/ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
+          artifacts: "ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
           draft: true
 
   windows-release:
@@ -49,7 +49,7 @@ jobs:
         with:
           arch: amd64
       - run: |
-          python3 configure.py --cc=msvc --os=windows --prefix install --build-tool=ninja
+          python3 configure.py --cc=msvc --os=windows --prefix /opt/botan-3 --build-tool=ninja
           ninja
           ninja install
       - name: Archive Release
@@ -57,12 +57,12 @@ jobs:
         with:
           type: "zip"
           filename: "windows-release-3.zip"
-          directory: install
+          path: /opt/botan-3
       - name: Compute checksum
-        run: sha256sum install/windows-release-3.zip > windows-release-3.sha256sum
+        run: sha256sum windows-release-3.zip > windows-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "install/windows-release-3.zip,windows-release-3.sha256sum"
+          artifacts: "windows-release-3.zip,windows-release-3.sha256sum"
           draft: true
