@@ -49,7 +49,7 @@ jobs:
         with:
           arch: amd64
       - run: |
-          python3 configure.py --cc=msvc --os=windows --prefix /opt/botan-3 --build-tool=ninja
+          python3 configure.py --cc=msvc --os=windows --prefix install --build-tool=ninja
           ninja
           ninja install
       - name: Archive Release
@@ -57,12 +57,12 @@ jobs:
         with:
           type: "zip"
           filename: "windows-release-3.zip"
-          path: \opt\botan-3
+          directory: install
       - name: Compute checksum
-        run: sha256sum windows-release-3.zip > windows-release-3.sha256sum
+        run: sha256sum install/windows-release-3.zip > windows-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "windows-release-3.zip,windows-release-3.sha256sum"
+          artifacts: "install/windows-release-3.zip,windows-release-3.sha256sum"
           prerelease: true
