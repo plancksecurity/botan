@@ -57,7 +57,7 @@ jobs:
         with:
           type: "zip"
           filename: "windows-release-3.zip"
-          path: /opt/botan-3
+          path: \opt\botan-3
       - name: Compute checksum
         run: sha256sum windows-release-3.zip > windows-release-3.sha256sum
       - name: Create release
