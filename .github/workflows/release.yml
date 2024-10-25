@@ -31,12 +31,12 @@ jobs:
           filename: "ubuntu-release-3.zip"
           directory: /opt
       - name: Compute checksum
-        run: sha256sum ubuntu-release-3.zip > ubuntu-release-3.sha256sum
+        run: sha256sum /opt/ubuntu-release-3.zip > ubuntu-release-3.sha256sum
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
+          artifacts: "/opt/ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
           prerelease: true
 
   windows-release:
