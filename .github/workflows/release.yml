@@ -1,0 +1,69 @@
+# This workflow does the following:
+#
+#   1. builds botan on Ubuntu and Windows
+#   2. creates a release, if it doesn't exist
+#   3. uploads the artifacts to that release
+#
+# This is done whenever a new tag is created.
+#
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  ubuntu-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ./configure.py --cc=clang --prefix /opt/botan-3
+          make -j8
+          make install
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: "zip"
+          filename: "ubuntu-release-3.zip"
+          directory: /opt
+          path: botan-3
+      - name: Compute checksum
+        run: sha256sum /opt/ubuntu-release-3.zip > ubuntu-release-3.sha256sum
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "/opt/ubuntu-release-3.zip,ubuntu-release-3.sha256sum"
+          prerelease: true
+
+  windows-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+      - run: |
+          python3 configure.py --cc=msvc --os=windows --prefix install --build-tool=ninja
+          ninja
+          ninja install
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: "zip"
+          filename: "windows-release-3.zip"
+          directory: install
+      - name: Compute checksum
+        run: sha256sum install/windows-release-3.zip > windows-release-3.sha256sum
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "install/windows-release-3.zip,windows-release-3.sha256sum"
+          prerelease: true
