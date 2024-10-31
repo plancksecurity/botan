@@ -96,3 +96,6 @@ callgrind.*
 
 # cscope
 cscope.out
+
+iphone-64/
+
