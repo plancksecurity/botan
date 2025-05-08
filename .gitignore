@@ -1,6 +1,8 @@
 /Makefile
 build.ninja
 .ninja_log
+.ninja_deps
+.ninja_lock
 libbotan*.so.*
 *.a
 *.so
